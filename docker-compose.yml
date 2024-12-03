@@ -1,0 +1,8 @@
+services:
+  gdrive-converter-bot:
+    build: app
+    restart: unless-stopped
+    volumes:
+      - ./app:/app
+    env_file: .env
+    

@@ -1,0 +1,10 @@
+# Telegram API
+telethon
+
+# google drive downloader
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+
+aiofiles
