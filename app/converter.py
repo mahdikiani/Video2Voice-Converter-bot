@@ -1,6 +1,9 @@
+import logging
 import asyncio
 import subprocess
 from pathlib import Path
+import moviepy
+from concurrent.futures import ThreadPoolExecutor
 
 
 async def run_command_async(command):
@@ -17,8 +20,29 @@ async def run_command_async(command):
     return stdout, stderr
 
 
+def convert_to_mp3_with_moviepy(input_video: Path, output_audio: Path):
+    video = moviepy.VideoFileClip(str(input_video))
+    audio = video.audio
+    audio.write_audiofile(str(output_audio), bitrate="32k")
+    video.close()
+    audio.close()
+
+
 async def convert_to_mp3(input_video: Path):
     output_audio = input_video.parent / f"ffmpeg_{input_video.stem}.mp3"
+    try:
+        loop = asyncio.get_running_loop()
+        with ThreadPoolExecutor() as executor:
+            await loop.run_in_executor(
+                executor, convert_to_mp3_with_moviepy, input_video, output_audio
+            )
+
+        logging.info(f"Conversion to MP3 completed using moviepy: {output_audio}")
+        return output_audio
+    except Exception as e:
+        logging.warning(f"Error converting with moviepy: {str(e)}")
+        # Continue to ffmpeg conversion if moviepy fails
+
     command = [
         "ffmpeg",
         "-i",
